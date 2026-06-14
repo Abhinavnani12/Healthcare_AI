@@ -1,0 +1,14 @@
+
+> frontend@0.0.0 dev
+> vite --host 127.0.0.1
+
+Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m1646[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m6:50:57 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/context/AuthContext.jsx, /src/index.css[22m
+[2m6:50:58 pm[22m [36m[1m[vite][22m[39m [33mhmr invalidate [39m[2m/src/context/AuthContext.jsx[22m Could not Fast Refresh ("default" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m6:50:58 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css, /src/pages/IcuOperations.jsx, /src/pages/AlertsCenter.jsx, /src/pages/Reports.jsx, /src/pages/Login.jsx, /src/pages/Settings.jsx, /src/pages/FinancialDashboard.jsx, /src/pages/AdminPanel.jsx, /src/pages/Register.jsx, /src/components/DashboardLayout.jsx, /src/pages/DoctorProductivity.jsx, /src/pages/PatientJourney.jsx, /src/pages/HospitalExecutive.jsx, /src/pages/EmergencyRoom.jsx[22m
+[2m7:02:18 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/EmergencyRoom.jsx, /src/index.css[22m
