@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model aiinsight {
+  id             Int      @id @default(autoincrement())
+  category       String
+  title          String
+  recommendation String   @db.Text
+  priority       String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+}
+
+model alert {
+  id                Int            @id @default(autoincrement())
+  title             String
+  department        String
+  priority          alert_priority
+  status            alert_status   @default(OPEN)
+  description       String         @db.Text
+  recommendedAction String         @db.Text
+  assignedUserId    Int?
+  createdAt         DateTime       @default(now())
+  resolvedAt        DateTime?
+  user              user?          @relation(fields: [assignedUserId], references: [id], map: "Alert_assignedUserId_fkey")
+
+  @@index([assignedUserId], map: "Alert_assignedUserId_fkey")
+  @@index([priority, status, createdAt], map: "Alert_priority_status_createdAt_idx")
+}
+
+model ambulancearrival {
+  id             Int      @id @default(autoincrement())
+  vehicleCode    String
+  eta            DateTime
+  triageCategory String
+  patientCount   Int
+}
+
+model auditlog {
+  id         Int      @id @default(autoincrement())
+  action     String
+  entityType String
+  entityId   String?
+  details    Json?
+  userId     Int?
+  createdAt  DateTime @default(now())
+  user       user?    @relation(fields: [userId], references: [id], map: "AuditLog_userId_fkey")
+
+  @@index([createdAt, action], map: "AuditLog_createdAt_action_idx")
+  @@index([userId], map: "AuditLog_userId_fkey")
+}
+
+model bed {
+  id        Int    @id @default(autoincrement())
+  bedNumber String @unique(map: "Bed_bedNumber_key")
+  ward      String
+  type      String
+  status    String
+}
+
+model bill {
+  id            Int      @id @default(autoincrement())
+  invoiceNumber String   @unique(map: "Bill_invoiceNumber_key")
+  amount        Decimal  @db.Decimal(12, 2)
+  status        String
+  department    String
+  createdAt     DateTime @default(now())
+}
+
+model dailyhospitalmetric {
+  id                  Int         @id @default(autoincrement())
+  metricDate          DateTime
+  timeLabel           String
+  totalBeds           Int
+  occupiedBeds        Int
+  icuTotalBeds        Int
+  icuOccupiedBeds     Int
+  erWaitingPatients   Int
+  admissions          Int
+  discharges          Int
+  collectedRevenue    Decimal     @db.Decimal(14, 2)
+  operatingCosts      Decimal     @db.Decimal(14, 2)
+  patientSatisfaction Float
+  departmentId        Int?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime
+  department          department? @relation(fields: [departmentId], references: [id], map: "DailyHospitalMetric_departmentId_fkey")
+
+  @@index([departmentId], map: "DailyHospitalMetric_departmentId_fkey")
+  @@index([metricDate], map: "DailyHospitalMetric_metricDate_idx")
+}
+
+model department {
+  id                  Int                   @id @default(autoincrement())
+  name                String                @unique(map: "Department_name_key")
+  code                String                @unique(map: "Department_code_key")
+  dailyhospitalmetric dailyhospitalmetric[]
+}
+
+model doctor {
+  id                       Int                        @id @default(autoincrement())
+  name                     String
+  department               String
+  availabilityStatus       String
+  doctorproductivitymetric doctorproductivitymetric[]
+}
+
+model doctorproductivitymetric {
+  id                     Int      @id @default(autoincrement())
+  doctorId               Int
+  metricDate             DateTime
+  patientsHandled        Int
+  consultationsCompleted Int
+  scheduledSurgeries     Int
+  pendingTasks           Int
+  patientFeedback        Float
+  workloadLevel          String
+  doctor                 doctor   @relation(fields: [doctorId], references: [id], map: "DoctorProductivityMetric_doctorId_fkey")
+
+  @@index([doctorId], map: "DoctorProductivityMetric_doctorId_fkey")
+}
+
+model emergencycase {
+  id             Int      @id @default(autoincrement())
+  caseNumber     String   @unique(map: "EmergencyCase_caseNumber_key")
+  triageCategory String
+  arrivalTime    DateTime
+  status         String
+  waitMinutes    Int
+}
+
+model icurecord {
+  id               Int      @id @default(autoincrement())
+  recordedAt       DateTime
+  occupiedBeds     Int
+  ventilatorsInUse Int
+  criticalPatients Int
+  highRiskPatients Int
+}
+
+model insuranceclaim {
+  id          Int      @id @default(autoincrement())
+  claimNumber String   @unique(map: "InsuranceClaim_claimNumber_key")
+  amount      Decimal  @db.Decimal(12, 2)
+  status      String
+  submittedAt DateTime
+}
+
+model patientjourney {
+  id                    Int                          @id @default(autoincrement())
+  maskedPatientId       String                       @unique(map: "PatientJourney_maskedPatientId_key")
+  patientName           String
+  department            String
+  assignedDoctor        String
+  admissionDate         DateTime
+  currentStage          patientjourney_currentStage
+  pendingTests          String?
+  expectedDischargeDate DateTime?
+  delayReason           String?
+  billingStatus         patientjourney_billingStatus
+  notes                 String?                      @db.Text
+  createdByUserId       Int
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime
+  user                  user                         @relation(fields: [createdByUserId], references: [id], map: "PatientJourney_createdByUserId_fkey")
+
+  @@index([admissionDate], map: "PatientJourney_admissionDate_idx")
+  @@index([createdByUserId], map: "PatientJourney_createdByUserId_fkey")
+  @@index([department, currentStage, billingStatus], map: "PatientJourney_department_currentStage_billingStatus_idx")
+}
+
+model payment {
+  id        Int      @id @default(autoincrement())
+  reference String   @unique(map: "Payment_reference_key")
+  amount    Decimal  @db.Decimal(12, 2)
+  method    String
+  paidAt    DateTime
+}
+
+model pharmacyinventory {
+  id           Int      @id @default(autoincrement())
+  medicineName String   @unique(map: "PharmacyInventory_medicineName_key")
+  stock        Int
+  reorderLevel Int
+  updatedAt    DateTime
+}
+
+model report {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        String
+  filters     Json?
+  generatedBy String
+  createdAt   DateTime @default(now())
+}
+
+model user {
+  id             Int              @id @default(autoincrement())
+  fullName       String
+  email          String           @unique(map: "User_email_key")
+  passwordHash   String
+  role           user_role        @default(OPERATIONS_HEAD)
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  alert          alert[]
+  auditlog       auditlog[]
+  patientjourney patientjourney[]
+}
+
+model ward {
+  id       Int    @id @default(autoincrement())
+  name     String @unique(map: "Ward_name_key")
+  capacity Int
+  occupied Int
+}
+
+enum alert_priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum alert_status {
+  OPEN
+  ASSIGNED
+  RESOLVED
+}
+
+enum user_role {
+  ADMIN
+  CEO
+  CMO
+  OPERATIONS_HEAD
+}
+
+enum patientjourney_currentStage {
+  REGISTRATION
+  CONSULTATION
+  TESTS
+  DIAGNOSIS
+  ADMISSION
+  TREATMENT
+  DISCHARGE
+  FOLLOW_UP
+}
+
+enum patientjourney_billingStatus {
+  PENDING
+  CLEARED
+  INSURANCE_REVIEW
+}
